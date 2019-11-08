@@ -22,8 +22,9 @@
 // libraries
 #include <Wire.h>
 #include <Adafruit_Sensor.h>
-#include "SparkFunMPL3115A2.h"
-#include <Adafruit_L3GD20_U.h>
+//#include "SparkFunMPL3115A2.h"
+#include <Adafruit_MPL3115A2.h>
+//#include <Adafruit_L3GD20_U.h>
 #include <Adafruit_BNO055.h>
 #include <utility/imumaths.h>
 //#include <SD.h>
@@ -81,18 +82,18 @@ File dataFile;
 Adafruit_BNO055 bno = Adafruit_BNO055();
 
 // MPL instantiation
-MPL3115A2 MPLPressure;
+Adafruit_MPL3115A2 MPLPressure;
 
 //L3G instantiation?
 /* Assign a unique ID to this sensor at the same time */
-Adafruit_L3GD20_Unified gyro = Adafruit_L3GD20_Unified(20);
+//Adafruit_L3GD20_Unified gyro = Adafruit_L3GD20_Unified(20);
 
 char filename[9] = "data.txt";
 
 void setup() {
 
   Serial.begin(9600);   // printing to screen // TESTING
-
+  Serial.println("Testing");
   while(!Serial) ;  // TESTING
   
   Wire.begin();        // Join i2c bus
@@ -116,36 +117,37 @@ void setup() {
     BNOINIT = true;
   }
    /* Enable auto-ranging */
-  gyro.enableAutoRange(true);
-  if(!gyro.begin())
-  {
-    /* There was a problem detecting the L3GD20 ... check your connections */
-    Serial.println("Ooops, no L3GD20 detected ... Check your wiring!");
-    while(1);
-  }
-  else
-  {
-    L3GINIT = true;
-  }
+  //gyro.enableAutoRange(true);
+  //if(!gyro.begin())
+  //{
+  //  /* There was a problem detecting the L3GD20 ... check your connections */
+  //  Serial.println("Ooops, no L3GD20 detected ... Check your wiring!");
+  //  while(1);
+  //}
+  //else
+  //{
+  //  L3GINIT = true;
+  //}
 
   // check if that init returned something // MPLPressure.begin();
   MPLPressure.begin();
   
 
-  if ( BNOINIT && L3GINIT && SDINIT )
+  if ( BNOINIT && SDINIT )
   {
     LEDINITIAL = true;
   }
   
   bno.setExtCrystalUse(true);
 
-  MPLPressure.setModeAltimeter(); // Measure altitude above sea level in meters (MPL)
-  MPLPressure.setOversampleRate(7); // Set Oversample to the recommended 128
-  MPLPressure.enableEventFlags(); // Enable all three pressure and temp event flags 
+  //MPLPressure.setModeAltimeter(); // Measure altitude above sea level in meters (MPL)
+  //MPLPressure.setOversampleRate(7); // Set Oversample to the recommended 128
+  //MPLPressure.enableEventFlags(); // Enable all three pressure and temp event flags 
   
   k = -1*Cd*pAir*aRocket / (2*mRocket);
   
-  x[0][0] = MPLPressure.readAltitude(); //Set initial altitude based on sensor reading
+  //x[0][0] = MPLPressure.readAltitude(); //Set initial altitude based on sensor reading
+  x[0][0] = MPLPressure.getAltitude();
   lastT = millis();
 
   launchA = x[0][0];
@@ -155,17 +157,18 @@ void setup() {
   Print_Header();
 
   pinMode(6, OUTPUT);
-  pinMode(8, OUTPUT);
+  pinMode(5, OUTPUT);
   digitalWrite(6, LEDINITIAL);
 }
 
 void loop() {
 
   Serial.println("We are looping");
-
+  digitalWrite(6,true);
   // Temperature variables
   int8_t bno_temp = bno.getTemp();
-  float mpl_temp = MPLPressure.readTemp();
+  //float mpl_temp = MPLPressure.readTemp();
+  float mpl_temp = MPLPressure.getTemperature();
 
   // vector creation
   // acceleration units in m/s^2
@@ -176,7 +179,7 @@ void loop() {
 
   /* Get a new sensor event */ 
   sensors_event_t L3G_event; 
-  gyro.getEvent(&L3G_event);
+  //gyro.getEvent(&L3G_event);
 
   double accel_x = bno_linearAccel.x();
   double accel_y = bno_linearAccel.y();
@@ -186,14 +189,16 @@ void loop() {
   double bno_gyro_y = bno_gyro.y();
   double bno_gyro_z = bno_gyro.z();
 
-  double l3g_gyro_x = L3G_event.gyro.x;
-  double l3g_gyro_y = L3G_event.gyro.y;
-  double l3g_gyro_z = L3G_event.gyro.z;
+  //double l3g_gyro_x = L3G_event.gyro.x;
+  //double l3g_gyro_y = L3G_event.gyro.y;
+  //double l3g_gyro_z = L3G_event.gyro.z;
 
   // Altitude in m
   // Pressure in Pa
-  float mpl_alt = MPLPressure.readAltitude();
-  float mpl_pres = MPLPressure.readPressure();
+  //float mpl_alt = MPLPressure.readAltitude();
+  //float mpl_pres = MPLPressure.readPressure();
+  float mpl_alt = MPLPressure.getAltitude();
+  float mpl_pres = MPLPressure.getPressure();
 
   if (maxA < x[0][0]) {
     maxA = x[0][0];
@@ -209,28 +214,32 @@ void loop() {
     LEDWRITING = true;
 
     Serial.println("WITNESS ME!!!");
-    Serial.print("accelx");
+    Serial.println(flightstate);
+    Serial.print("accelx: ");
     Serial.print(accel_x, 8); Serial.print(","); Serial.flush(); Serial.println(" ");
-    Serial.print("accely");
+    Serial.print("accely: ");
     Serial.print(accel_y, 8); Serial.print(","); Serial.flush(); Serial.println(" ");
-    Serial.print("accelz");
+    Serial.print("accelz: ");
     Serial.print(accel_z, 8); Serial.print(","); Serial.flush(); Serial.println(" ");
-    Serial.print("bnogyrox");
+    Serial.print("bnogyrox: ");
     Serial.print(bno_gyro_x, 8); Serial.print(","); Serial.flush(); Serial.println(" ");
-    Serial.print("bnogyroy");
+    Serial.print("bnogyroy: ");
     Serial.print(bno_gyro_y, 8); Serial.print(","); Serial.flush(); Serial.println(" ");
-    Serial.print("bnogyroz");
+    Serial.print("bnogyroz: ");
     Serial.print(bno_gyro_z, 8); Serial.print(","); Serial.flush(); Serial.println(" ");
-    Serial.print("l3ggyrox");
-    Serial.print(l3g_gyro_x, 8); Serial.print(","); Serial.flush(); Serial.println(" ");
-    Serial.print("l3ggyroy");
-    Serial.print(l3g_gyro_y, 8); Serial.print(","); Serial.flush(); Serial.println(" ");
-    Serial.print("l3ggyroz");
-    Serial.print(l3g_gyro_z, 8); Serial.print(","); Serial.flush(); Serial.println(" "); Serial.flush();
+    Serial.print("mpl_alt: ");
+    Serial.print(mpl_alt,8); Serial.print(","); Serial.flush(); Serial.println(" ");
+    
+    //Serial.print("l3ggyrox");
+    //Serial.print(l3g_gyro_x, 8); Serial.print(","); Serial.flush(); Serial.println(" ");
+    //Serial.print("l3ggyroy");
+    //Serial.print(l3g_gyro_y, 8); Serial.print(","); Serial.flush(); Serial.println(" ");
+    //Serial.print("l3ggyroz");
+    //Serial.print(l3g_gyro_z, 8); Serial.print(","); Serial.flush(); Serial.println(" "); Serial.flush();
 
-    dataFile.print(flightstate); dataFile.print(","); dataFile.flush();
-    dataFile.print(millis()); dataFile.print(","); dataFile.flush();
-    dataFile.print(bno_temp); dataFile.print(","); dataFile.flush();
+    dataFile.print(flightstate,8); dataFile.print(","); dataFile.flush();
+    dataFile.print(millis(),8); dataFile.print(","); dataFile.flush();
+    dataFile.print(bno_temp,8); dataFile.print(","); dataFile.flush();
     dataFile.print(mpl_temp, 8); dataFile.print(","); dataFile.flush();
     dataFile.print(accel_x, 8); dataFile.print(","); dataFile.flush();
     dataFile.print(accel_y, 8); dataFile.print(","); dataFile.flush();
@@ -238,11 +247,14 @@ void loop() {
     dataFile.print(bno_gyro_x, 8); dataFile.print(","); dataFile.flush();
     dataFile.print(bno_gyro_y, 8); dataFile.print(","); dataFile.flush();
     dataFile.print(bno_gyro_z, 8); dataFile.print(","); dataFile.flush();
-    dataFile.print(l3g_gyro_x, 8); dataFile.print(","); dataFile.flush();
-    dataFile.print(l3g_gyro_y, 8); dataFile.print(","); dataFile.flush();
-    dataFile.print(l3g_gyro_z, 8); dataFile.print(","); dataFile.flush();
+    //dataFile.print(l3g_gyro_x, 8); dataFile.print(","); dataFile.flush();
+    //dataFile.print(l3g_gyro_y, 8); dataFile.print(","); dataFile.flush();
+    //dataFile.print(l3g_gyro_z, 8); dataFile.print(","); dataFile.flush();
     dataFile.print(mpl_alt, 8); dataFile.print(","); dataFile.flush();
     dataFile.print(mpl_pres, 8); dataFile.print(","); dataFile.flush();
+    dataFile.print("\n");
+
+    /*
     // state matrix begins
     dataFile.print(x[0][0], 8); dataFile.print(","); dataFile.flush();
     dataFile.print(x[1][0], 8); dataFile.print(","); dataFile.flush();
@@ -257,6 +269,7 @@ void loop() {
     dataFile.print(P[2][0], 8); dataFile.print(","); dataFile.flush();
     dataFile.print(P[2][1], 8); dataFile.print(","); dataFile.flush();
     dataFile.print(P[2][2], 8); dataFile.print("\n"); dataFile.flush();
+    */
     
     dataFile.close();
   } else {
@@ -310,15 +323,18 @@ void Print_Header() {
     dataFile.print("BNO Gyro X rad/s,"); dataFile.flush();
     dataFile.print("BNO Gyro Y rad/s,"); dataFile.flush();
     dataFile.print("BNO Gyro Z rad/s,"); dataFile.flush();
-    dataFile.print("L3G Gyro X rad/s,"); dataFile.flush();
-    dataFile.print("L3G Gyro Y rad/s,"); dataFile.flush();
-    dataFile.print("L3G Gyro Z rad/s,"); dataFile.flush();
+    //dataFile.print("L3G Gyro X rad/s,"); dataFile.flush();
+    //dataFile.print("L3G Gyro Y rad/s,"); dataFile.flush();
+    //dataFile.print("L3G Gyro Z rad/s,"); dataFile.flush();
     dataFile.print("Altitude m,"); dataFile.flush();
     dataFile.print("Pressure Pa,"); dataFile.flush();
+    dataFile.print("\n");
+    /*
     dataFile.print("Kalman Altitude,"); dataFile.flush();
     dataFile.print("Kalman Velocity,"); dataFile.flush();
     dataFile.print("Kalman Z Acceleration,"); dataFile.flush();
     dataFile.print("Covariance (3x3 Matrix)\n"); dataFile.flush();
+  */
     
     dataFile.close();
   } else {
