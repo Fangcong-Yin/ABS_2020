@@ -79,6 +79,7 @@ const float accelBurnoutThreshold = -5; //m/s^2 -5
 
 float launchA;
 float maxA = -100;
+float altitude_offset;
 
 File dataFile;
 
@@ -150,6 +151,15 @@ void setup() {
 
   // check if that init returned something // MPLPressure.begin();
   MPLPressure.begin();
+
+  //Zero out altitude
+  float sum;
+  for (int i=0; i<200; i++) {
+    sum += MPLPressure.readAltitude();
+    delay(40);
+  }
+  altitude_offset = sum / 200;
+  
   //float pressure = MPLPressure.getPressure();
   ////Serial.print("Initial Pressure: "); //Serial.println(pressure);
   //MPLPressure.setSeaPressure(pressure);
@@ -244,6 +254,7 @@ void loop() {
   // Altitude in m
   // Pressure in Pa
   float mpl_alt = MPLPressure.readAltitude();
+  mpl_alt -= altitude_offset;
   float mpl_pres = MPLPressure.readPressure();
   //float mpl_alt = MPLPressure.getAltitude();
   //float mpl_pres = MPLPressure.getPressure();
