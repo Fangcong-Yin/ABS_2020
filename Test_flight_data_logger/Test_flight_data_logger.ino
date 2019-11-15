@@ -101,6 +101,8 @@ Adafruit_ADXL345_Unified accel = Adafruit_ADXL345_Unified(12345);
 char filename[9] = "data.txt";
 
 void setup() {
+  pinMode(5, OUTPUT);
+  digitalWrite(5,true);
 
   //Serial.begin(9600);   // printing to screen // TESTING
 
@@ -152,11 +154,17 @@ void setup() {
   // check if that init returned something // MPLPressure.begin();
   MPLPressure.begin();
 
+  MPLPressure.setModeAltimeter(); // Measure altitude above sea level in meters (MPL)
+  MPLPressure.setOversampleRate(1); // Set Oversample to the recommended 128
+  MPLPressure.enableEventFlags(); // Enable all three pressure and temp event flags 
+
+
   //Zero out altitude
-  float sum;
+  float sum = 0;
   for (int i=0; i<200; i++) {
+    //Serial.println(sum);
     sum += MPLPressure.readAltitude();
-    delay(40);
+    delay(1);
   }
   altitude_offset = sum / 200;
   
@@ -173,9 +181,7 @@ void setup() {
   
   bno.setExtCrystalUse(true);
 
-  MPLPressure.setModeAltimeter(); // Measure altitude above sea level in meters (MPL)
-  MPLPressure.setOversampleRate(1); // Set Oversample to the recommended 128
-  MPLPressure.enableEventFlags(); // Enable all three pressure and temp event flags 
+
   
   k = -1*Cd*pAir*aRocket / (2*mRocket);
   
@@ -190,7 +196,7 @@ void setup() {
   Print_Header();
 
   pinMode(6, OUTPUT);
-  pinMode(5, OUTPUT);
+  digitalWrite(5,false);
   digitalWrite(6, LEDINITIAL);
 }
 
