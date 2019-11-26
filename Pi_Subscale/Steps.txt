@@ -1,0 +1,7 @@
+https://learn.adafruit.com/bno055-absolute-orientation-sensor-with-raspberry-pi-and-beaglebone-black/hardware
+    -this site has some useful information: have to deactivate some port to get it to work with the bno055
+    -just follow this tutorial to get set up with the BNO
+    -will have to modify to get 16g readings I'm sure
+
+https://github.com/adafruit/Adafruit_CircuitPython_MPL3115A2
+    -MPL CircuitPython library-try to use this
