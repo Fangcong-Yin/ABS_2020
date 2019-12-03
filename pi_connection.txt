@@ -1,0 +1,7 @@
+1. Make sure you're on ND-Guest
+2. Figure out IP address of Pi
+    a) Current: 10.13.96.73
+    b) On Pi-ifconfig, should be wlan0 inet
+3. Go to a terminal somewhere
+4. Type: ssh pi@IP_ADDRESS (insert the IP address)
+    a) Password is abs2020
