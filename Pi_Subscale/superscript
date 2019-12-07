@@ -1,0 +1,8 @@
+#!/bin/sh
+# superscript.sh
+# do stuff
+
+cd /
+cd home/pi/ABS_2020/Pi_Subscale
+python3 Pi_Subscale.py
+cd /
