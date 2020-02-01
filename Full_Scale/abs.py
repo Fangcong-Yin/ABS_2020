@@ -1,19 +1,26 @@
 # The main file
-import Data_Logger
-import Kalman
-import PID
+from Data_Logger import *
+from Kalman import *
+from State_Manager import *
 
-data_logger.init()
+#TODO: consider adding parallelization
+dlogger = DataLogger()
+dfilter = DataFilter()
+state_machine = StateManager()
 
-kalman.init()
-servo.move(pid.test(kalman.predict(data_logger.state)))
+while True:
+    #Read in data from the data logger
+    dlogger.read_data()
+    dlogger.write_data()
+    raw_data = dlogger.get_data()
 
+    #Filter the data
+    t,theta,y,v,a = dfilter.process_data(raw_data)
 
-def return_nums():
-    a = 1
-    b = 2
-    c = 3
+    #Check flight state
+    state_machine.check_transition(y,v,a)
+    state = state_machine.get_state()
 
-    return a,b,c
-
-a,b,c = return_nums()
+    #do PID stuff if necessary
+    if state == 'Burnout':
+        pass
