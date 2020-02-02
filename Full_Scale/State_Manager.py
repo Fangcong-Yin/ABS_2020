@@ -22,7 +22,7 @@ class StateManager():
             self.current_state = 2
         elif(self.current_state ==2 and position >= self.apogee):
             self.current_state = 3
-        eif(self.current_state ==3 and velocity <= self.threshold_of_landing):
+        elif(self.current_state ==3 and velocity <= self.threshold_of_landing):
             self.current_state = 4
         pass
 
