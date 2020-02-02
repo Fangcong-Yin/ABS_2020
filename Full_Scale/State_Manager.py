@@ -9,6 +9,8 @@ class StateManager():
         self.threshold_of_burnout = 0
         self.apogee = 4444
         self.threshold_of_landing = 0
+        #The exact values of threshold of liftoff,burnout, and landing should replace the 0's
+  
 
     #Takes in input data from Kalman Filter and adjusts the current state if necessary
     def check_transition(self,position,velocity,acceleration):
