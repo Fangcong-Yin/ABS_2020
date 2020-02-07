@@ -6,15 +6,14 @@ class StateManager():
         self.state_list = ['Armed','Launched','Burnout','Apogee','Overshot','Landed']
         self.current_state = 0
         #Threshold values for lift off
-        self.threshold_acc_of_liftoff = 0
-        self.threshold_height_of_liftoff = 500
+        self.threshold_acc_of_liftoff = 130 #130ft/s²
+        self.threshold_height_of_liftoff = 100 #in ft
         #Threshold values for burn out
-        self.threshold_acc_of_burnout = 0
-        self.threshold_vel_of_burnout = 100 #The maximum velocity should replace 100
-        self.emergency_height = 1000
+        self.threshold_acc_of_burnout = -20 #-20ft/s²
+        self.emergency_height = 1500
         #Threshold values for apogee
         self.apogee = 4444
-        self.threshold_of_landing = 0
+        self.threshold_height_of_landing = 30
        
   
 
@@ -29,17 +28,17 @@ class StateManager():
                 next_state = 1
 
         if self.current_state == 1: #Launched
-            if (acceleration < self.threshold_of_burnout and velocity = self.threshold_vel_of_burnout) or (height > self.emergency_height):
+            if acceleration < self.threshold_of_acc_burnout or height > self.emergency_height:
                 next_state = 2
 
         if self.current_state == 2: #Burnout
-            if acceleration > self.threshold_of_burnout:
+            if acceleration > self.threshold_acc_of_burnout:
                 next_stage = 1
                 #Return to the Launched stage because the noises in acceleration
-            if height == self.apogee:
+            if height >= self.apogee and velocity <=0:
                 next_stage = 3
                 #Change to the Apogee stage
-            elif height > self.apogee:
+            elif height > self.apogee and velocity > 0:
                 next_stage = 4
                 #Change to the Overshot stage
                 
@@ -47,7 +46,7 @@ class StateManager():
             if velocity > 0:
                 next_stage = 2
                 #Return to the Burnout stage if the velocity is still greater than 0
-            if velocity == 0 and height ==0 and acceleration ==0:
+            if height < self.threshold_height_of_landing:
                 next_stage = 4
                 #Change to the Landed Stage
                 
